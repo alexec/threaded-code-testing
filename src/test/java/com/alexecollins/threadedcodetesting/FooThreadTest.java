@@ -4,34 +4,29 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutorService;
-
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author alex.e.c
  */
-public class FooTest {
+public class FooThreadTest {
 
-	private Foo sut; // system under test
-	private ExecutorService executorService;
+	private FooThread sut;
 
 	@Before
 	public void setUp() throws Exception {
-		executorService = new SynchronousExecutorService();
-		sut = new Foo(executorService);
-		sut.start();
+		sut = new FooThread();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		sut.stop();
-		executorService.shutdown();
+		sut.cancel();
 	}
 
 	@Test
-	public void testGivenFooWhenIncrementGetOne() throws Exception {
+	public void testGivenNewFooWhenIncrThenGetOne() throws Exception {
 		sut.incr();
+		sut.undertakeWork();
 		assertEquals("foo", 1, sut.get());
 	}
 }
