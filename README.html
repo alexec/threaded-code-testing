@@ -33,7 +33,19 @@ public class Foo {
 }
 </code>
 
-<h1>Tip 2 - Run Tasks in the Same Thread as Your Test</h1>
+<h1>Tip 2 - Set a Timeout on Your Tests</h1>
+
+<p>Bugs in code (as you'll see below) can result in a multi-threaded test never completing, as (for example) you're
+    waiting on some flag that never gets set. JUnit lets you set a timeout on your test. </p>
+
+<code type="java">
+    ...
+   	@Test(timeout = 100) // in case we never get a notification
+	public void testGivenNewFooWhenIncrThenGetOne() throws Exception {
+    ...
+</code>
+
+<h1>Tip 3 - Run Tasks in the Same Thread as Your Test</h1>
 
 <p>Typically you'll have an object that runs tasks in a thread pool. This means that your unit test might have to wait for the task to
 complete, but you're not able to know when it would complete. You might guess, for example:</p>
@@ -161,7 +173,7 @@ public class FooTest {
 
 <p>Note that you need to life-cycle manage the executor externally to Foo.</p>
 
-<h1>Tip 3 - Extract the Work from the Threading</h1>
+<h1>Tip 4 - Extract the Work from the Threading</h1>
 
 <p>If your thread is waiting for an event, or a time before it does any work, extract the work to its own method and call it directly.
 Consider this:</p>
@@ -282,9 +294,9 @@ public class FooThreadTest {
 }
 </code>
 
-<h1>Tip 4 - Notify State Change via Events</h1>
+<h1>Tip 5 - Notify State Change via Events</h1>
 
-<p>An alternative to tips 2 and 3 is to use a notification system, so your test can listen to the threaded object. This has pros and cons:</p>
+<p>An alternative to the previous two tips is to use a notification system, so your test can listen to the threaded object. This has pros and cons:</p>
 
 <p>Pros:</p>
 
@@ -372,8 +384,6 @@ public class ObservableFooTest implements Observer {
 	}
 }
 </code>
-
-<h1>Tip 5 - Use a Tool to Identify Problems</h1>
 
 <p>The code is <a href="https://github.com/alexec/threaded-code-testing">on GitHub</a>.</p>
 
