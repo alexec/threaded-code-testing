@@ -11,7 +11,6 @@ public class ObservableFooRunnable extends Observable implements Runnable {
 	private volatile boolean cancelled;
 	private final AtomicLong foo = new AtomicLong();
 
-	@Override
 	public void run() {
 		try {
 			synchronized (ready) {

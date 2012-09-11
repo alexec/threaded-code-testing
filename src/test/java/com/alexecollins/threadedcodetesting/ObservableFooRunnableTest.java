@@ -39,7 +39,6 @@ public class ObservableFooRunnableTest implements Observer {
 		assertEquals("foo", 1, sut.get());
 	}
 
-	@Override
 	public void update(final Observable o, final Object arg) {
 		assert o == sut;
 		updateLatch.countDown();

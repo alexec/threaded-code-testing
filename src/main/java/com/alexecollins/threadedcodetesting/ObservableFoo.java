@@ -22,7 +22,6 @@ public class ObservableFoo extends Observable {
 
 	public void incr() {
 		executorService.submit(new Runnable() {
-			@Override
 			public void run() {
 				foo.incrementAndGet();
 				setChanged();

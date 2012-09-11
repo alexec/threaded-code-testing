@@ -1,23 +1,23 @@
 <html>
 <head><title>5 Tips for Unit Testing Threaded Code</title></head>
 <body>
+<style type="text/css">/* fix for buggy geshi filter on Java 6*/ code {white-space:pre;}</style>
 <p>Here's a few tips on how take make testing your code for logical correctness (as opposed to multi-threaded correctness).</p>
 
 <p>I find that there are essentially two stereotypical patterns with threaded code:</p>
 
 <ol>
     <li>Task orientated -  many, short running, homogeneous tasks, often run within the Java 5 executor framework,</li>
-    <li>Process orientated - few, long running, heterogeneous tasks, often event based (waiting on notification), or
-polling (sleeping between cycles), often expressed using a thread or runnable.</li>
+    <li>Process orientated - few, long running, heterogeneous tasks, often event based (waiting on notification), or polling (sleeping between cycles), often expressed using a thread or runnable.</li>
 </ol>
 
-<p>Testing either type of code can be hard; the work is done in another thread, and therefore notification of completion can be opaque, or is
-hidden behind a level of abstraction.</p>
+<p>Testing either type of code can be hard; the work is done in another thread, and therefore notification of completion can be opaque, or is hidden behind a level of abstraction.</p>
+
+<p>The code is <a href="https://github.com/alexec/threaded-code-testing">on GitHub</a>.</p>
 
 <h1>Tip 1 - Life-cycle Manage Your Objects</h1>
 
-<p>Object that have a managed life-cycle are are easier to test, the life-cycle allows for set-up and tear-down, which means you can
-clean-up after your test and no spurious threads are lying around to pollute other tests.</p>
+<p>Object that have a managed life-cycle are are easier to test, the life-cycle allows for set-up and tear-down, which means you can clean-up after your test and no spurious threads are lying around to pollute other tests.</p>
 
 <code type="java">
 public class Foo {
@@ -35,8 +35,7 @@ public class Foo {
 
 <h1>Tip 2 - Set a Timeout on Your Tests</h1>
 
-<p>Bugs in code (as you'll see below) can result in a multi-threaded test never completing, as (for example) you're
-    waiting on some flag that never gets set. JUnit lets you set a timeout on your test. </p>
+<p>Bugs in code (as you'll see below) can result in a multi-threaded test never completing, as (for example) you're waiting on some flag that never gets set. JUnit lets you set a timeout on your test. </p>
 
 <code type="java">
     ...
@@ -47,8 +46,7 @@ public class Foo {
 
 <h1>Tip 3 - Run Tasks in the Same Thread as Your Test</h1>
 
-<p>Typically you'll have an object that runs tasks in a thread pool. This means that your unit test might have to wait for the task to
-complete, but you're not able to know when it would complete. You might guess, for example:</p>
+<p>Typically you'll have an object that runs tasks in a thread pool. This means that your unit test might have to wait for the task to complete, but you're not able to know when it would complete. You might guess, for example:</p>
 
 <code type="java">
 public class Foo {
@@ -97,12 +95,9 @@ public class FooTest {
 </code>
 
 
-<p>But this is problematic. Execution is non-uniform so there's no guarantee that this will work on another machine.
-    It's fragile, changes to the code can cause the test to fail as it suddenly take a bit too long. Its slow, as you
-    will be generous with sleep when it fails.</p>
+<p>But this is problematic. Execution is non-uniform so there's no guarantee that this will work on another machine. It's fragile, changes to the code can cause the test to fail as it suddenly take a bit too long. Its slow, as you will be generous with sleep when it fails.</p>
 
-<p>A trick is to make the task run synchronously, i.e. in the same thread as the test. This can be achieved by
-injecting the executor:</p>
+<p>A trick is to make the task run synchronously, i.e. in the same thread as the test. Here this can be achieved by injecting the executor:</p>
 
 <code type="java">
 public class Foo {
@@ -175,8 +170,7 @@ public class FooTest {
 
 <h1>Tip 4 - Extract the Work from the Threading</h1>
 
-<p>If your thread is waiting for an event, or a time before it does any work, extract the work to its own method and call it directly.
-Consider this:</p>
+<p>If your thread is waiting for an event, or a time before it does any work, extract the work to its own method and call it directly. Consider this:</p>
 
 <code type="java">
 public class FooThread extends Thread {
@@ -296,25 +290,7 @@ public class FooThreadTest {
 
 <h1>Tip 5 - Notify State Change via Events</h1>
 
-<p>An alternative to the previous two tips is to use a notification system, so your test can listen to the threaded object. This has pros and cons:</p>
-
-<p>Pros:</p>
-
-<ol>
-    <li>Creates useful code for listening to the object.</li>
-    <li>Can take advantage of existing notification code, which makes it a good choice where that code already exists.</li>
-    <li>Is more flexible, can apply to both tasks and threads.</li>
-    <li>It is more cohesive than extracting the work.</li>
-</ol>
-
-<p>Cons:</p>
-
-<ol>
-    <li>Listener code can be complex and introduce its own problems, creating additional production code that ought to be tested.</li>
-    <li>De-couples submission from notification.</li>
-    <li>Requires you to deal with the scenario that no notification is sent (e.g. due to bug).</li>
-    <li>Test code can be quite verbose and therefore prone to having bugs.</li>
-</ol>
+<p>An alternative to the previous two tips is to use a notification system, so your test can listen to the threaded object.</p>
 
 <p>Here's a task oriented example:</p>
 
@@ -385,7 +361,25 @@ public class ObservableFooTest implements Observer {
 }
 </code>
 
-<p>The code is <a href="https://github.com/alexec/threaded-code-testing">on GitHub</a>.</p>
+<p>This has pros and cons:</p>
+
+<p>Pros:</p>
+
+<ol>
+    <li>Creates useful code for listening to the object.</li>
+    <li>Can take advantage of existing notification code, which makes it a good choice where that already exists.</li>
+    <li>Is more flexible, can apply to both tasks and process orientated code.</li>
+    <li>It is more cohesive than extracting the work.</li>
+</ol>
+
+<p>Cons:</p>
+
+<ol>
+    <li>Listener code can be complex and introduce its own problems, creating additional production code that ought to be tested.</li>
+    <li>De-couples submission from notification.</li>
+    <li>Requires you to deal with the scenario that no notification is sent (e.g. due to bug).</li>
+    <li>Test code can be quite verbose and therefore prone to having bugs.</li>
+</ol>
 
 </body>
 </html>

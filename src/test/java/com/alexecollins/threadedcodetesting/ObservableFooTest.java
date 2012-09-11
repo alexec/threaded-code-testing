@@ -26,7 +26,6 @@ public class ObservableFooTest implements Observer {
 		sut.start();
 	}
 
-	@Override
 	public void update(final Observable o, final Object arg) {
 		assert o == sut;
 		updateLatch.countDown();
